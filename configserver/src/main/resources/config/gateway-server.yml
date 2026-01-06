@@ -1,0 +1,85 @@
+server:
+  port: 8072
+ 
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://eurekaserver:8070/eureka/
+      
+ 
+spring:
+  cloud:
+    loadbalancer.ribbon.enabled: false
+    gateway:
+        routes:
+        - id: catalogservice
+          uri: lb://catalogservice
+          predicates:
+            - Path=/catalog/**
+          filters:
+            - RewritePath=/catalog/(?<path>.*), /$\{path}
+        - id: organization-service
+          uri: lb://organization-service
+          predicates:
+          - Path=/organization/**
+          filters:
+          - RewritePath=/organization/(?<path>.*), /$\{path}
+        - id: licensing-service
+          uri: lb://licensing-service
+          predicates:
+          - Path=/license/**
+          filters:
+          - RewritePath=/license/(?<path>.*), /$\{path}
+        - id: orderingservice
+          uri: lb://orderingservice
+          predicates:
+            - Path=/ordering/**
+          filters:
+            - RewritePath=/ordering/(?<path>.*), /$\{path}
+        - id: inventoryservice
+          uri: lb://inventoryservice
+          predicates:
+            - Path=/inventory/**
+          filters:
+            - RewritePath=/inventory/(?<path>.*), /$\{path}
+        - id: kitchenbarservice
+          uri: lb://kitchenbarservice
+          predicates:
+            - Path=/kitchenbar/**
+          filters:
+            - RewritePath=/kitchenbar/(?<path>.*), /$\{path}
+        - id: billingservice
+          uri: lb://billingservice
+          predicates:
+            - Path=/billing/**
+          filters:
+            - RewritePath=/billing/(?<path>.*), /$\{path}
+        globalcors:
+          add-to-simple-url-handler-mapping: true
+          corsConfigurations:
+            '[/**]':
+              allowedOrigins:
+                - "http://localhost:4200"
+                - "https://your-angular-app.com"
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              allowedHeaders: "*"
+              allowCredentials: true
+
+
+       
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        
+        
