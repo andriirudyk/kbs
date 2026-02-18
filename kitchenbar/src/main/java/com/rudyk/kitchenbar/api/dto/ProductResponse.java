@@ -4,10 +4,10 @@ public class ProductResponse {
     private Long id;
     private String name;
     private String description;
-    private Long price;
+    private double price;
     private String category;
 
-    public ProductResponse(Long id, String name, String description, Long price, String category) {
+    public ProductResponse(Long id, String name, String description, double price, String category) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -47,11 +47,11 @@ public class ProductResponse {
         this.id = id;
     }
 
-    public Long getPrice() {
+    public double getPrice() {
         return price;
     }
 
-    public void setPrice(Long price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 }

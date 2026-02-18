@@ -2,6 +2,7 @@ package com.rudyk.kitchenbar.api.controllers;
 
 import com.rudyk.kitchenbar.api.dto.CreateProduct;
 import com.rudyk.kitchenbar.api.dto.CreateTicketRequest;
+import com.rudyk.kitchenbar.api.dto.ProductDTO;
 import com.rudyk.kitchenbar.api.dto.ProductResponse;
 import com.rudyk.kitchenbar.domain.model.Product;
 import com.rudyk.kitchenbar.services.KitchenBarService;
@@ -31,7 +32,8 @@ public class KitchenBarController {
 
     private final KitchenBarService kitchenBarService;
     private final TicketManagementService ticketManagementService;
-private ProductService productService;
+    private ProductService productService;
+
     public KitchenBarController(KitchenBarService kitchenBarService,
                                 TicketManagementService ticketManagementService,
                                 ProductService productService) {
@@ -95,17 +97,27 @@ private ProductService productService;
         Ticket t = ticketManagementService.reassign(ticketId, req.newStationOrAssignee);
         return TicketResponse.from(t);
     }
-// add product
-@PostMapping("/product")
-public ProductResponse addProduct(@RequestBody @Valid CreateProduct createProduct) {
-    return productService.createProduct(createProduct);
-}
+
+    // add product
+    @PostMapping("/product")
+    public ProductResponse addProduct(@RequestBody @Valid CreateProduct createProduct) {
+        return productService.createProduct(createProduct);
+    }
+
     @GetMapping("/product/get")
     public List<ProductResponse> getProduct() {
         System.out.println("get product endpoint");
         return productService.getProducts();
     }
-
+    @PutMapping("/product")
+    public ProductResponse updateProduct(@RequestBody @Valid ProductDTO product) {
+        return productService.updateProduct(product);
+    }
+    @DeleteMapping("/product/{productId}")
+    public void deleteProduct(@PathVariable Long productId) {
+        System.out.println("delete product endpoint");
+        productService.deleteProduct(productId);
+    }
     // --- List active (not READY) ---
     @GetMapping("/active")
     public List<TicketResponse> listActive() {

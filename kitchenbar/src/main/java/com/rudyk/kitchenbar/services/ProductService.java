@@ -1,6 +1,7 @@
 package com.rudyk.kitchenbar.services;
 
 import com.rudyk.kitchenbar.api.dto.CreateProduct;
+import com.rudyk.kitchenbar.api.dto.ProductDTO;
 import com.rudyk.kitchenbar.api.dto.ProductResponse;
 import com.rudyk.kitchenbar.domain.model.Product;
 import com.rudyk.kitchenbar.repositories.ProductRepository;
@@ -49,6 +50,18 @@ public class ProductService {
                    product.getCategory()));
        }
         return productResponses;
-
     }
+    public ProductResponse updateProduct(ProductDTO productDTO) {
+        Product product = productRepository.findById(productDTO.getId()).orElseThrow();
+        product.setName(productDTO.getName());
+        product.setPrice(productDTO.getPrice());
+        product.setCategory(productDTO.getCategory());
+        product.setDescription(productDTO.getDescription());
+        productRepository.save(product);
+        return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice(), product.getCategory());
+    }
+    public void deleteProduct(Long productId) {
+        productRepository.deleteById(productId);
+    }
+
 }

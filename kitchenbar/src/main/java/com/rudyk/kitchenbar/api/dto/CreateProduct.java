@@ -4,7 +4,7 @@ public class CreateProduct {
     private Long productId;
     private String name;
     private String description;
-    private Long price;
+    private double price;
     private String category;
 
     public String getCategory() {
@@ -31,11 +31,11 @@ public class CreateProduct {
         this.name = name;
     }
 
-    public Long getPrice() {
+    public double getPrice() {
         return price;
     }
 
-    public void setPrice(Long price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 
