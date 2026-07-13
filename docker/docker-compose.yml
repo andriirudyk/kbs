@@ -110,7 +110,7 @@ services:
   configserver:
     image: kbra/configserver:latest
     ports:
-       - "8071:8071"
+      - "8071:8071"
     environment:
       ENCRYPT_KEY: "fje83Ki8403Iod87dne7Yjsl3THueh48jfuO9j4U2hf64Lo"
     networks:
@@ -125,7 +125,7 @@ services:
       database:
         condition: service_healthy
       configserver:
-        condition: service_started  
+        condition: service_started
     networks:
       backend:
         aliases:
@@ -246,6 +246,8 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
 
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
       KC_DB: postgres
       KC_DB_URL_HOST: database
       KC_DB_URL_PORT: 5432
