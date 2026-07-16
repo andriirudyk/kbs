@@ -240,30 +240,40 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
-    restart: always
-    command: start-dev
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
 
+    command:
+      - start-dev
+      - --import-realm
+
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+
+      KC_HOSTNAME: keycloak
       KC_HOSTNAME_STRICT: false
       KC_HTTP_ENABLED: true
+
       KC_DB: postgres
       KC_DB_URL_HOST: database
       KC_DB_URL_PORT: 5432
       KC_DB_URL_DATABASE: ostock_dev
       KC_DB_USERNAME: postgres
       KC_DB_PASSWORD: postgres
+
+      SPRING_CLIENT_SECRET: dev-secret-123
+
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import:ro
+
     ports:
       - "8080:8080"
+
     depends_on:
       database:
         condition: service_healthy
-    networks:
-      backend:
-        aliases:
-          - "keycloak"
 
+    networks:
+      - backend
 networks:
   backend:
     driver: bridge
