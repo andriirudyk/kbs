@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: eu-north-1
   ECR_REPOSITORY: my-app
 
 jobs:
@@ -18,8 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -27,39 +26,19 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: ecr
+      - name: Login to ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Image
-        run: |
-          docker build -t $ECR_REPOSITORY .
+        run: docker build -t $ECR_REPOSITORY .
 
       - name: Tag Image
         run: |
           docker tag $ECR_REPOSITORY:latest \
-          ${{ steps.ecr.outputs.registry }}/$ECR_REPOSITORY:latest
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:latest
 
       - name: Push Image
         run: |
           docker push \
-          ${{ steps.ecr.outputs.registry }}/$ECR_REPOSITORY:latest
-
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            aws ecr get-login-password --region us-east-1 | \
-            docker login \
-              --username AWS \
-              --password-stdin \
-              123456789012.dkr.ecr.us-east-1.amazonaws.com
-
-            docker compose -f /home/ubuntu/docker-compose.yml pull
-
-            docker compose -f /home/ubuntu/docker-compose.yml up -d
-
-            docker image prune -af
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:latest
