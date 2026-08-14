@@ -11,29 +11,29 @@ permissions:
 
 env:
   AWS_REGION: eu-north-1
+  ECR_REPOSITORY: kitchen-bar-service/kbs
+  SERVICE_DIR: ordering
 
 jobs:
-
   deploy:
-
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        service:
-          - billing
-          - catalog
-          - configserver
-          - eurekaserver
-          - gatewayserver
-          - inventory
-          - kitchenbar
-          - ordering
-
     steps:
-
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: Build JAR with Maven
+        working-directory: ./${{ env.SERVICE_DIR }}
+        run: |
+          chmod +x mvnw
+          ./mvnw clean package -DskipTests
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -41,7 +41,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Test AWS Connection
+      - name: Test AWS connection
         run: aws sts get-caller-identity
 
       - name: Login to ECR
@@ -51,16 +51,16 @@ jobs:
       - name: Build Image
         run: |
           docker build \
-            -t ${{ matrix.service }} \
-            ./${{ matrix.service }}
+            --build-arg JAR_FILE=target/*.jar \
+            -t $ECR_REPOSITORY \
+            ./${{ env.SERVICE_DIR }}
 
       - name: Tag Image
         run: |
-          docker tag \
-            ${{ matrix.service }}:latest \
-            ${{ steps.login-ecr.outputs.registry }}/kitchen-bar-service/${{ matrix.service }}:latest
+          docker tag $ECR_REPOSITORY:latest \
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:latest
 
       - name: Push Image
         run: |
           docker push \
-            ${{ steps.login-ecr.outputs.registry }}/kitchen-bar-service/${{ matrix.service }}:latest
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:latest
