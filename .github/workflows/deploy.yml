@@ -11,21 +11,29 @@ permissions:
 
 env:
   AWS_REGION: eu-north-1
-  ECR_REPOSITORY: kitchen-bar-service/kbs
 
 jobs:
+
   deploy:
+
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        service:
+          - billing
+          - catalog
+          - configserver
+          - eurekaserver
+          - gatewayserver
+          - inventory
+          - kitchenbar
+          - ordering
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Show GitHub OIDC identifiers
-        run: |
-            echo "repository=${{ github.repository }}"
-            echo "owner=${{ github.repository_owner }}"
-            echo "owner_id=${{ github.repository_owner_id }}"
-            echo "repository_id=${{ github.repository_id }}"
-            echo "ref=${{ github.ref }}" 
+
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -33,7 +41,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Test AWS connection
+      - name: Test AWS Connection
         run: aws sts get-caller-identity
 
       - name: Login to ECR
@@ -41,14 +49,18 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Image
-        run: docker build -t $ECR_REPOSITORY .
+        run: |
+          docker build \
+            -t ${{ matrix.service }} \
+            ./${{ matrix.service }}
 
       - name: Tag Image
         run: |
-          docker tag $ECR_REPOSITORY:latest \
-          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:latest
+          docker tag \
+            ${{ matrix.service }}:latest \
+            ${{ steps.login-ecr.outputs.registry }}/kitchen-bar-service/${{ matrix.service }}:latest
 
       - name: Push Image
         run: |
           docker push \
-          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:latest
+            ${{ steps.login-ecr.outputs.registry }}/kitchen-bar-service/${{ matrix.service }}:latest
