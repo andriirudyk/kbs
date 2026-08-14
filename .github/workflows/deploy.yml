@@ -19,6 +19,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Show GitHub OIDC identifiers
+        run: |
+            echo "repository=${{ github.repository }}"
+            echo "owner=${{ github.repository_owner }}"
+            echo "owner_id=${{ github.repository_owner_id }}"
+            echo "repository_id=${{ github.repository_id }}"
+            echo "ref=${{ github.ref }}" 
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
