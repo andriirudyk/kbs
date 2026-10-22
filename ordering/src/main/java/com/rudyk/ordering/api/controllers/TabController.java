@@ -3,6 +3,7 @@ package com.rudyk.ordering.api.controllers;
 import com.rudyk.ordering.api.dto.AddOrderItemRequest;
 import com.rudyk.ordering.api.dto.OrderItemResponse;
 import com.rudyk.ordering.api.dto.TabResponse;
+import com.rudyk.ordering.exceptionhandler.TabNotFoundException;
 import com.rudyk.ordering.services.TabService;
 import com.rudyk.ordering.domain.model.OrderItem;
 import com.rudyk.ordering.domain.model.Tab;
@@ -21,7 +22,7 @@ public class TabController {
         this.tabService = tabService;
     }
 
-    // 1) Open a tab
+
     @PostMapping
     public TabResponse openTab(@RequestParam("tableNumber") Integer tableNumber) {
         Tab tab = tabService.openTab(tableNumber);
@@ -29,7 +30,7 @@ public class TabController {
     }
 
 
-    // 2) Add item
+
     @PostMapping("/{tabId}/items")
     public TabResponse addItem(@PathVariable Long tabId, @RequestBody AddOrderItemRequest req) {
         Tab tab = tabService.addItem(tabId, req.itemCode, req.displayName, req.unitPrice, req.quantity);
@@ -42,22 +43,22 @@ public class TabController {
         return toResponse(tab);
     }
 
-    // 3) Close tab
+
     @PostMapping("/{tabId}/close")
     public TabResponse closeTab(@PathVariable Long tabId) {
         Tab tab = tabService.closeTab(tabId);
         return toResponse(tab);
     }
 
-    // 4) Get tab
+
     @GetMapping("/{tabId}")
     public TabResponse getTab(@PathVariable Long tabId) {
         return tabService.getTab(tabId)
                 .map(this::toResponse)
-                .orElseThrow(() -> new RuntimeException("Tab not found"));
+                .orElseThrow(() -> new TabNotFoundException(tabId));
     }
 
-    // 5) List all tabs
+
     @GetMapping
     public List<TabResponse> getAllTabs() {
         return tabService.getAllTabs().stream()
@@ -66,14 +67,22 @@ public class TabController {
     }
 
     @GetMapping("/{tabId}/items")
-    public List<OrderItemResponse> getItemsFromTab(@PathVariable Long tabId) {
-        return toResponse(tabService.getTab(tabId).get()).getItems();
+    public List<OrderItemResponse> getItemsFromTab(
+            @PathVariable Long tabId) {
+
+        Tab tab = tabService.getTab(tabId)
+                .orElseThrow(() -> new TabNotFoundException(tabId));
+
+        return tab.getOrderItems()
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
-    // --- mapping ---
+
     private TabResponse toResponse(Tab tab) {
         TabResponse dto = new TabResponse();
-        dto.id = tab.getId();                       // Long
+        dto.id = tab.getId();
         dto.tableNumber = tab.getTableNumber();
         dto.status = tab.getStatus().name();
         dto.items = tab.getOrderItems().stream().map(this::toDto).collect(Collectors.toList());
