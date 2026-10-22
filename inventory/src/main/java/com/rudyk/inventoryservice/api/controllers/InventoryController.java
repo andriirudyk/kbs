@@ -33,7 +33,7 @@ public class InventoryController {
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found: " + itemCode));
     }
 
-    // Списати товар (наприклад, після продажу)
+
     @PatchMapping("/stock")
     public InventoryItemResponse decreaseStock(@RequestBody DecreaseStockRequest request) {
         InventoryItem item = inventoryService.decreaseStock(
@@ -43,7 +43,7 @@ public class InventoryController {
         return InventoryItemResponse.fromDomain(item);
     }
 
-    // DTO для відповіді
+
     public static class InventoryItemResponse {
         public String itemCode;
         public int quantity;
@@ -58,13 +58,13 @@ public class InventoryController {
         }
     }
 
-    // DTO для списання запасу
+
     public static class DecreaseStockRequest {
         public String itemCode;
         public int amount;
     }
 
-    // (Простий runtime exception, можна замінити на ResponseStatusException)
+
     @ResponseStatus(code = org.springframework.http.HttpStatus.NOT_FOUND)
     public static class ResourceNotFoundException extends RuntimeException {
         public ResourceNotFoundException(String msg) { super(msg); }
