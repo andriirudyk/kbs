@@ -25,7 +25,7 @@ public class InventoryController {
         return item.map(InventoryItemResponse::fromDomain)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found: " + itemCode));
     }
-    // Перевірити залишок по коду
+
     @GetMapping("/items/{itemCode}")
     public InventoryItemResponse getStock(@PathVariable String itemCode) {
         Optional<InventoryItem> item = inventoryService.getInventoryItem(new ItemCode(itemCode));
